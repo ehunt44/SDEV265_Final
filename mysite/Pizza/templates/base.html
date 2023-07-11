@@ -1,0 +1,19 @@
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'Pizza/style.css' %}"/>
+    <title>Delicious Pizza</title>
+</head>
+
+{% include 'header.html' %}
+
+{% block content %}
+{% endblock %}
+
+<footer>
+    <div class="container">
+        <p>&copy; 2023 Delicious Pizza. All rights reserved.</p>
+    </div>
+</footer>

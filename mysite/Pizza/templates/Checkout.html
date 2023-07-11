@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{%block content %}
+
+
+  <section class="checkout">
+    <div class="container">
+      <h2>Checkout</h2>
+      <form id="checkoutForm" action="Receipt.html" method="POST">
+        <label for="cardNumber">Card Number</label>
+        <input type="text" id="cardNumber" name="cardNumber" required>
+
+        <label for="cardName">Cardholder Name</label>
+        <input type="text" id="cardName" name="cardName" required>
+
+        <label for="address">Address</label>
+        <input type="text" id="address" name="address" required>
+
+        <label for="expiryDate">Expiry Date</label>
+        <input type="text" id="expiryDate" name="expiryDate" required>
+
+        <label for="cvv">CVV</label>
+        <input type="text" id="cvv" name="cvv" required>
+
+        <button type="button" onclick="displayReceipt(event)">Pay Now</button>
+      </form>
+    </div>
+  </section>
+
+  <div class="receipt-window" id="receiptWindow">
+    <h2>Receipt Summary</h2>
+    <div id="receiptItems"></div>
+    <p>Total: <span id="receiptTotal"></span></p>
+    <button type="submit" onclick="order()" class="toCheckout">Place order</button>
+  </div>
+
+  <script>
+
+    function displayReceipt(event) {
+      event.preventDefault();
+
+      const cardNumber = document.getElementById("cardNumber").value;
+      const cardName = document.getElementById("cardName").value;
+      const expiryDate = document.getElementById("expiryDate").value;
+      const cvv = document.getElementById("cvv").value;
+
+      const receiptItemsContainer = document.getElementById("receiptItems");
+      const receiptTotalContainer = document.getElementById("receiptTotal");
+
+      // Retrieve cart items from local storage or use an empty array as default
+      const cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+
+      let total = 0;
+
+      // Generate the receipt summary HTML
+      let receiptHTML = `
+        <p>Card Number: ${cardNumber}</p>
+        <p>Cardholder Name: ${cardName}</p>
+        <p>Expiry Date: ${expiryDate}</p>
+        <p>CVV: ${cvv}</p>
+        <h3>Items:</h3>
+        <ul>
+      `;
+
+      // Iterate over the cart items and calculate the total cost
+      cartItems.forEach(item => {
+        receiptHTML += `<li>${item.name} - $${item.price.toFixed(2)}</li>`;
+        total += item.price;
+      });
+
+      receiptHTML += `</ul>`;
+
+      receiptItemsContainer.innerHTML = receiptHTML;
+      receiptTotalContainer.textContent = `$${total.toFixed(2)}`;
+
+      // Show the receipt window
+      const receiptWindow = document.getElementById("receiptWindow");
+      receiptWindow.style.display = "block";
+    }
+
+    //convert cart information to JSON, send in POST request for processing by Django
+    function order() {
+      
+
+      let data = JSON.parse(localStorage.getItem('cartItems')) || []
+      data.push({address: "123 street", name: "bob"})
+      data = JSON.stringify(data)
+
+      //submit order data
+      fetch("{% url 'order' %}", {
+        method: "POST",
+
+        /*
+        body: JSON.stringify({
+          id: 1,
+        }),
+        */
+
+        /*
+        body: JSON.stringify([localStorage.getItem('cartItems'), {
+          address: "123 street",
+          name: "bob"
+        }]),
+        */
+
+        body: data,
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}"
+        },
+        mode: "same-origin",
+      })
+      //if successful, clear cart and return to cart page
+      .then(function(){
+        localStorage.removeItem('cartItems');
+        alert(`Your order has been placed!`);
+        window.location.href = '{% url 'cart' %}'; // Redirect back to the cart
+      })
+      //failure
+      .catch(function(){ 
+        alert("Failed to place order");
+      })
+    }
+
+  </script>
+
+{% endblock %}

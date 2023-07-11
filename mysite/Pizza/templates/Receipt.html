@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Delicious Pizza</title>
+</head>
+<body>
+
+  <header>
+    <nav>
+      <div class="container">
+        <div class="logo">
+          <a href="Home.html"><img src="logo.png" alt="Delicious Pizza Logo"></a>
+        </div>
+        <ul class="menu">
+          <li><a href="Home.html">Home</a></li>
+          <li><a href="Menu.html">Menu</a></li>
+          <li><a href="Locations.html">Locations</a></li>
+          <li><a href="Cart.html">Cart</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <section class="checkout">
+    <div class="container">
+      <h2>Checkout</h2>
+      <form id="checkoutForm" action="process_payment.php" method="POST">
+        <label for="cardNumber">Card Number</label>
+        <input type="text" id="cardNumber" name="cardNumber" required>
+
+        <label for="cardName">Cardholder Name</label>
+        <input type="text" id="cardName" name="cardName" required>
+
+        <label for="expiryDate">Expiry Date</label>
+        <input type="text" id="expiryDate" name="expiryDate" required>
+
+        <label for="cvv">CVV</label>
+        <input type="text" id="cvv" name="cvv" required>
+
+        <button type="submit" onclick="displayReceipt()">Pay Now</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="receipt">
+    <div class="container">
+      <h2>Receipt Summary</h2>
+      <div id="receiptItems"></div>
+    </div>
+  </section>
+
+  <script>
+    function displayReceipt() {
+      const cardNumber = document.getElementById("cardNumber").value;
+      const cardName = document.getElementById("cardName").value;
+      const expiryDate = document.getElementById("expiryDate").value;
+      const cvv = document.getElementById("cvv").value;
+
+      const receiptItemsContainer = document.getElementById("receiptItems");
+      receiptItemsContainer.innerHTML = `
+        <p>Card Number: ${cardNumber}</p>
+        <p>Cardholder Name: ${cardName}</p>
+        <p>Expiry Date: ${expiryDate}</p>
+        <p>CVV: ${cvv}</p>
+      `;
+      
+      const receiptWindow = document.querySelector(".receipt-window");
+      receiptWindow.style.display = "block";
+    }
+  </script>
+
+  <div class="receipt-window">
+    <h2>Receipt Summary</h2>
+    <div id="receiptItems"></div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2023 Delicious Pizza. All rights reserved.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{%block content %}
+
+
+  <section class="cart">
+    <div class="container">
+      <h2>Cart</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody id="cartItems"></tbody>
+      </table>
+      <div>
+        <button onclick="redirectToCheckout()" class="toCheckout">Checkout</button>
+      </div>
+    </div>
+  </section>
+
+
+<script>
+  let cartItems = localStorage.getItem('cartItems') || '[]';
+  cartItems = JSON.parse(cartItems);
+
+  function renderCartItems() {
+    const cartItemsContainer = document.getElementById('cartItems');
+    cartItemsContainer.innerHTML = '';
+
+    cartItems.forEach(item => {
+      const row = document.createElement('tr');
+      const productName = document.createElement('td');
+      const productPrice = document.createElement('td');
+
+      productName.textContent = item.name;
+      productPrice.textContent = `$${item.price.toFixed(2)}`;
+
+      row.appendChild(productName);
+      row.appendChild(productPrice);
+      cartItemsContainer.appendChild(row);
+    });
+  }
+
+  function redirectToCheckout() {
+    //localStorage.removeItem('cartItems');
+    window.location.href = '{% url 'checkout' %}'; // Redirect to the checkout page
+  }
+
+  function renderReceipt() {
+    const receiptItemsContainer = document.getElementById('receiptItems');
+    receiptItemsContainer.innerHTML = '';
+
+    const heading = document.createElement('h3');
+    heading.textContent = 'Thank you for your purchase!';
+    receiptItemsContainer.appendChild(heading);
+
+    const list = document.createElement('ul');
+    cartItems.forEach(item => {
+      const listItem = document.createElement('li');
+      listItem.textContent = `${item.name} - $${item.price.toFixed(2)}`;
+      list.appendChild(listItem);
+    });
+
+    receiptItemsContainer.appendChild(list);
+
+    cartItems = [];
+    renderCartItems();
+  }
+
+  renderCartItems();
+</script>
+
+
+
+
+{% endblock %}
