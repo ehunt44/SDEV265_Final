@@ -107,7 +107,9 @@ nav {
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   position: relative;
+  text-align: center;
 }
+
 
 .product img {
   width: 100%;
@@ -177,6 +179,13 @@ footer {
   border: 1px solid #ccc;
 }
 
+.extras{
+  font-size: 0.85rem;
+  margin-left: 0.7rem;
+  background-color: #eee;
+  padding: 0.8rem;
+  border-radius: 10px;
+}
 .toCheckout {
   display: block;
   margin: 10px auto;

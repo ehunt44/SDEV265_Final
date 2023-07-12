@@ -11,75 +11,52 @@
           <div class="product">
             <img src="{% static 'Pizza/Menu/' %}{{ item.filename }}" alt="{{ item.name }}">
             <h3>{{item.name}} - ${{item.price}} - {{item.calories}} calories</h3>
-            <p>{{item.description}}</p>
+            <div style="background-color: #eee; border-radius: 10px; padding: 0.8rem; height: 31%; margin-bottom: 2rem;">
+              <p>{{item.description}}</p>
               {% for topping in item.toppings.all %}
-              <input type="checkbox" name="topping" id="{{item.pk}}topping{{topping.pk}}" value="{{topping.pk}}">
-              <label for="{{item.pk}}topping{{topping.pk}}">{{ topping.name }}</label><br>
+                <input type="checkbox" name="{{item.pk}}topping" id="{{item.pk}}topping{{topping.pk}}" value="{{topping.pk}}">
+                <label for="{{item.pk}}topping{{topping.pk}}">{{ topping.name }} - {{topping.calories}} Cal.</label><br>
               {% endfor %}
-            <button onclick="addToCart('{{ item.name }}', {{ item.price }})">Add to Cart</button>
+              <button onclick="addToCart('{{ item.name }}', {{ item.price }}, {{item.pk}})">Add to Cart</button>
+
+            </div>
           </div>
         {% endfor %}
       </div>
     </div>
 
-
-
-
-      <!--
-      <div class="product-grid">
-        <div class="product">
-          <img src="{% static 'Pizza/pizza1.jpg' %}" alt="Pizza 1">
-          <h3>Pepperoni Pizza - $9.99</h3>
-          <p>Delicious pizza topped with pepperoni slices.</p>
-          <button onclick="addToCart('Pepperoni Pizza', 9.99)">Add to Cart</button>
-        </div>
-        <div class="product">
-          <img src="{% static 'Pizza/pizza2.jpg' %}" alt="Pizza 2">
-          <h3>Margherita Pizza - $8.99</h3>
-          <p>Classic pizza with fresh tomatoes and mozzarella.</p>
-          <button onclick="addToCart('Margheria Pizza', 8.99)">Add to Cart</button>
-        </div>
-        <div class="product">
-          <img src="{% static 'Pizza/pizza3.jpg' %}" alt="Pizza 3">
-          <h3>Hawaiian Pizza - $10.99</h3>
-          <p>Perfect combination of pineapple and ham.</p>
-          <button onclick="addToCart('Hawaiian Pizza', 10.99)">Add to Cart</button>
-        </div>
-        <div class="product">
-          <img src="{% static 'Pizza/pizza4.jpg' %}" alt="Pizza 4">
-          <h3>Meat Lovers Pizza - $12.99</h3>
-          <p>For all those meat lovers out there.</p>
-          <button onclick="addToCart('Meat Lovers Pizza', 12.99)">Add to Cart</button>
-        </div>
-        <div class="product">
-          <img src="{% static 'Pizza/pizza5.jpg' %}" alt="Pizza 5">
-          <h3>Cheese Pizza - $7.99</h3>
-          <p>A mix of 3 cheeses for your tasting.</p>
-          <button onclick="addToCart('Cheese Pizza', 7.99)">Add to Cart</button>
-        </div>
-        <div class="product">
-          <img src="{% static 'Pizza/pizza6.jpg' %}" alt="Pizza 6">
-          <h3>Neapolitan Pizza - $10.99</h3>
-          <p>Have a taste of Italy all in one pizza.</p>
-          <button onclick="addToCart('Neapolitan Pizza', 10.99)">Add to Cart</button>
-        </div>
-        -->
 </section>
   
   <script>
-    function addToCart(productName, price) {
+    function addToCart(productName, price, itemId) {
+
+      const checkboxes = document.querySelectorAll(`input[name="${itemId}topping"]`);
+
+      const selectedToppings = [];
+      checkboxes.forEach((checkbox) => {
+        if (checkbox.checked) {
+          const toppingName = document.querySelector(`label[for="${checkbox.id}"]`).innerText;
+          selectedToppings.push(toppingName);
+        }
+      });
+
+
+
       let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
       
       const product = {
+        cartId: cartItems.length + 1,
+        itemPK: itemId,
         name: productName,
-        price: price
+        price: price,
+        toppings: selectedToppings
       };
       
       cartItems.push(product);
 
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
       
-      alert(`Added ${productName} to the cart.`);
+      alert(`Added ${productName} ${selectedToppings} the cart.`);
     }
   </script>
 {% endblock %}

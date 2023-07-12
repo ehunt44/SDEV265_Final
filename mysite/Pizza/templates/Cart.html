@@ -29,13 +29,27 @@
   function renderCartItems() {
     const cartItemsContainer = document.getElementById('cartItems');
     cartItemsContainer.innerHTML = '';
-
     cartItems.forEach(item => {
+
       const row = document.createElement('tr');
       const productName = document.createElement('td');
       const productPrice = document.createElement('td');
 
-      productName.textContent = item.name;
+      row.setAttribute("id", item.cartId);
+
+      var toppingsList = ``;
+      item.toppings.forEach(top => {
+        toppingsList += `- ${top} <br/>`;
+      });
+
+
+
+      productName.innerHTML = `<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;"> <div style="display: flex; flex-direction: column;">${item.name} <br/> <div class="extras"><i>${toppingsList}</i></div></div> <div style="display: flex; align-items: center;"><button id="${item.cartId}" style="float: right; background-color: #eee; border: 1px solid #D6D6D6;" onclick="removeItem(${item.cartId})"> 🗑️  </button></div></div>`;
+
+
+
+
+
       productPrice.textContent = `$${item.price.toFixed(2)}`;
 
       row.appendChild(productName);
@@ -44,9 +58,17 @@
     });
   }
 
+    function removeItem(id){
+      var row = document.getElementById(id).remove();
+      cartIndex = cartItems.indexOf({cartId: id})
+      cartItems.splice(cartIndex - 1, 1)
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    }
+
+
   function redirectToCheckout() {
     //localStorage.removeItem('cartItems');
-    window.location.href = '{% url 'checkout' %}'; // Redirect to the checkout page
+    window.location.href = "{% url 'checkout' %}"; // Redirect to the checkout page
   }
 
   function renderReceipt() {

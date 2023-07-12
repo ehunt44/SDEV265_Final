@@ -16,7 +16,9 @@ def menu(request):
     return render(request, 'menu.html', context)
 
 def locations(request):
-    return render(request, 'Locations.html', {})
+    Locations = Location.objects.all()
+    context = {"Locations": Locations}
+    return render(request, 'Locations.html', context)
 
 def cart(request):
     return render(request, 'Cart.html', {})
