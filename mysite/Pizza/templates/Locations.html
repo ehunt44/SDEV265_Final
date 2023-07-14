@@ -3,14 +3,12 @@
 {%block content %}
 
 
-
 {% for Location in Locations %}
 <div class="address-box">
   <h2>{{ Location.name }}</h2>
   <p>{{ Location.address }}</p>
   <p>{{ Location.city }}, {{ Location.stateAbriv }} {{ Location.zip }}</p>
 </div>
-
 {% endfor %}
 
 

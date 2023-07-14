@@ -9,16 +9,19 @@
       <div class="product-grid">
         {% for item in ItemList %}
           <div class="product">
-            <img src="{% static 'Pizza/Menu/' %}{{ item.filename }}" alt="{{ item.name }}">
-            <h3>{{item.name}} - ${{item.price}} - {{item.calories}} calories</h3>
-            <div style="background-color: #eee; border-radius: 10px; padding: 0.8rem; height: 31%; margin-bottom: 2rem;">
-              <p>{{item.description}}</p>
-              {% for topping in item.toppings.all %}
-                <input type="checkbox" name="{{item.pk}}topping" id="{{item.pk}}topping{{topping.pk}}" value="{{topping.pk}}">
-                <label for="{{item.pk}}topping{{topping.pk}}">{{ topping.name }} - {{topping.calories}} Cal.</label><br>
-              {% endfor %}
-              <button onclick="addToCart('{{ item.name }}', {{ item.price }}, {{item.pk}})">Add to Cart</button>
-
+            <div class="productInner">
+              <img src="{% static 'Pizza/Menu/' %}{{ item.filename }}" alt="An image of {{ item.name }}">
+              <h3>{{item.name}} - ${{item.price}} <br>{{item.calories}} Cal.</h3>
+              <div class="productToppings">
+                <p>{{item.description}}</p>
+                {% for topping in item.toppings.all %}
+                  <input type="checkbox" name="{{item.pk}}topping" id="{{item.pk}}topping{{topping.pk}}" value="{{topping.pk}}">
+                  <label for="{{item.pk}}topping{{topping.pk}}">{{ topping.name }}</label>
+                  <label for="{{item.pk}}topping{{topping.pk}}"> - {{topping.calories}} Cal.</label><br>
+                  $<label for="{{item.pk}}topping{{topping.pk}}">{{topping.price}}</label><br>
+                {% endfor %}
+                <button onclick="addToCart('{{ item.name }}', {{ item.price }}, {{item.pk}})">Add to Cart</button>
+              </div>
             </div>
           </div>
         {% endfor %}
@@ -28,35 +31,59 @@
 </section>
   
   <script>
+    //a function to add an item (with topping information) to an array
     function addToCart(productName, price, itemId) {
 
+      //get all checkboxes for the item (the topping selections)
       const checkboxes = document.querySelectorAll(`input[name="${itemId}topping"]`);
 
       const selectedToppings = [];
+      //for each selected topping
       checkboxes.forEach((checkbox) => {
-        if (checkbox.checked) {
-          const toppingName = document.querySelector(`label[for="${checkbox.id}"]`).innerText;
-          selectedToppings.push(toppingName);
+        if (checkbox.checked) {  //if selected, add topping to array of selected toppings
+          const topping = {
+            toppingPK: parseInt(checkbox.value),  //topping id/pk
+            name: document.querySelectorAll(`label[for="${checkbox.id}"]`)[0].innerText,  //get topping name from the first label
+            price: parseFloat(document.querySelectorAll(`label[for="${checkbox.id}"]`)[2].innerText)  //get topping price and convert to float
+          }
+          selectedToppings.push(topping); //add to array
         }
       });
 
-
-
+      //get existing cart items array, or empty array if none
       let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
       
-      const product = {
-        cartId: cartItems.length + 1,
+      //create item
+      const item = {
+        cartId: getCartId(cartItems),
         itemPK: itemId,
         name: productName,
         price: price,
         toppings: selectedToppings
       };
       
-      cartItems.push(product);
+      cartItems.push(item);
 
+      //update local storage cart items 
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
       
-      alert(`Added ${productName} ${selectedToppings} the cart.`);
+      //construct alert with the item and topping info added to cart
+      toppingsStr = ""
+      selectedToppings.forEach(topping => {toppingsStr += `${topping.name}, `})
+      alert(selectedToppings.length != 0 ? `Added ${productName} w/ ${toppingsStr}to the cart.` : `Added ${productName} to the cart.`);
+    }
+
+    //returns the largest cartId in the cart +1
+    function getCartId(cartItems){
+      console.log(cartItems)
+
+      //get cart id of last item added to array and add 1
+      if (cartItems.length > 0) {
+        newId = cartItems[cartItems.length - 1].cartId + 1
+      } else {
+        newId = 1
+      }
+      return newId
     }
   </script>
 {% endblock %}

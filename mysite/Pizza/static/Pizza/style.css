@@ -110,6 +110,18 @@ nav {
   text-align: center;
 }
 
+.productInner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.productToppings {
+  background-color: #eee;
+  border-radius: 10px;
+  padding: 0.8rem;
+  flex-grow: 2;
+}
 
 .product img {
   width: 100%;
@@ -129,6 +141,7 @@ nav {
   font-family: Georgia, 'Times New Roman', Times, serif;
   font-size: large;
   text-align: center;
+  padding-bottom: 0.5rem;
 }
 
 .product button {
@@ -159,9 +172,11 @@ footer {
   width: 300px;
   padding: 20px;
   border: 2px solid #ccc;
+  border-radius: 10px;
+  background-color: rgb(240, 240, 240);
   text-align: center;
   font-size: 16px;
-  margin: 0 auto; 
+  margin: 1em auto; 
 }
 
 .cart {
@@ -179,13 +194,44 @@ footer {
   border: 1px solid #ccc;
 }
 
-.extras{
+.cartItemInfo{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.cartItem{
+  display: flex;
+  flex-direction: column;
+}
+
+.cartToppings{
   font-size: 0.85rem;
   margin-left: 0.7rem;
   background-color: #eee;
   padding: 0.8rem;
   border-radius: 10px;
 }
+
+.cartDelete{
+  display: flex;
+  align-items: center;
+}
+
+.cartDelete button{
+  float: right;
+  background-color: #eee;
+  border-radius: 4px;
+  padding: 0.5em;
+  border: 1px solid #D6D6D6;
+  transition: background-color 0.3s ease;
+}
+
+.cartDelete button:hover{
+  background-color: #e31837;
+}
+
 .toCheckout {
   display: block;
   margin: 10px auto;
@@ -219,7 +265,7 @@ footer {
   font-weight: bold;
 }
 
-.checkout input[type="text"] {
+.checkout input {
   width: 100%;
   padding: 10px;
   font-size: 16px;
@@ -228,7 +274,7 @@ footer {
   box-shadow: none;
 }
 
-.checkout button[type="button"] {
+.checkout input[type="submit"] {
   display: block;
   width: 100%;
   padding: 10px;
@@ -242,7 +288,7 @@ footer {
   transition: background-color 0.3s ease;
 }
 
-.checkout button[type="button"]:hover {
+.checkout input[type="submit"]:hover {
   background-color: #45a049;
 }
 

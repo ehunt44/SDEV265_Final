@@ -9,11 +9,11 @@
       <table>
         <thead>
           <tr>
-            <th>Product</th>
-            <th>Price</th>
+            <th>Item</th>
+            <th width="20%">Price</th>
           </tr>
         </thead>
-        <tbody id="cartItems"></tbody>
+        <tbody id="cartTableItems"></tbody>
       </table>
       <div>
         <button onclick="redirectToCheckout()" class="toCheckout">Checkout</button>
@@ -23,54 +23,131 @@
 
 
 <script>
+  //get cart items from localstorage
   let cartItems = localStorage.getItem('cartItems') || '[]';
   cartItems = JSON.parse(cartItems);
 
+  //generates a table row for each item in the cart.
+  //each row shows the item information, and the choosen toppings for the item
+  //a delete button is created for each row as well, removing the table row and the associated cart item from local storage
   function renderCartItems() {
-    const cartItemsContainer = document.getElementById('cartItems');
-    cartItemsContainer.innerHTML = '';
+    //get table body html
+    const cartItemsContainer = document.getElementById('cartTableItems');
+    cartItemsContainer.innerHTML = '';  //clear table
+    
+    //create row for each item in cart
     cartItems.forEach(item => {
 
+      //create row and columns
       const row = document.createElement('tr');
-      const productName = document.createElement('td');
-      const productPrice = document.createElement('td');
+      const itemInfo = document.createElement('td');
+      const itemPrice = document.createElement('td');
 
+      //give row the same id as the item's cart id
       row.setAttribute("id", item.cartId);
 
+      //create list of all the item's selected toppings
       var toppingsList = ``;
-      item.toppings.forEach(top => {
-        toppingsList += `- ${top} <br/>`;
+      item.toppings.forEach(topping => {
+        toppingsList += `- ${topping.name} - $${topping.price}<br/>`;
       });
 
+      /*
+      <div class="cartItemInfo">
+        <div class="cartItem">
+          ${item.name}<br/>
+          <div class="cartToppings">
+            <i>${toppingsList}</i>
+          </div>
+        </div>
+        <div class="cartDelete">
+          <button id="${item.cartId}" onclick="removeItem(${item.cartId})">🗑️</button>
+        </div>
+      </div>
+      */
+     
+      //^^^ structure ^^^
+      //generates this table data for the item part of each row, including the item name, its toppings, and the delete button
+      const cartItemInfo = document.createElement('div')
+      cartItemInfo.classList.add('cartItemInfo')
 
+        //item name
+        const cartItem = document.createElement('div')
+        cartItem.classList.add('cartItem')
+        cartItem.innerHTML = `${item.name} - $${item.price}<br/>`
 
-      productName.innerHTML = `<div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%;"> <div style="display: flex; flex-direction: column;">${item.name} <br/> <div class="extras"><i>${toppingsList}</i></div></div> <div style="display: flex; align-items: center;"><button id="${item.cartId}" style="float: right; background-color: #eee; border: 1px solid #D6D6D6;" onclick="removeItem(${item.cartId})"> 🗑️  </button></div></div>`;
+          //only create toppings div if the item has chosen toppings
+          if (item.toppings.length > 0) {
+            const cartToppings = document.createElement('div')
+            cartToppings.classList.add('cartToppings')
+            cartToppings.innerHTML = `<i>${toppingsList}</i>`
 
+            cartItem.appendChild(cartToppings)
+          }
 
+        //delete button
+        const cartDelete = document.createElement('div')
+        cartDelete.classList.add('cartDelete')
+        cartDelete.innerHTML = `<button id="${item.cartId}" onclick="removeItem(${item.cartId})">🗑️</button>`
 
+      cartItemInfo.appendChild(cartItem)
+      cartItemInfo.appendChild(cartDelete)
 
+      //add item name, toppings, delete button, to the item table data
+      itemInfo.appendChild(cartItemInfo)
 
-      productPrice.textContent = `$${item.price.toFixed(2)}`;
+      //set table price data
+      itemPrice.textContent = `$${calculatePrice(item)}`;
 
-      row.appendChild(productName);
-      row.appendChild(productPrice);
+      //add all to the table row
+      row.appendChild(itemInfo);
+      row.appendChild(itemPrice);
+      //add table row to table body
       cartItemsContainer.appendChild(row);
     });
   }
 
-    function removeItem(id){
-      var row = document.getElementById(id).remove();
-      cartIndex = cartItems.indexOf({cartId: id})
-      cartItems.splice(cartIndex - 1, 1)
-      localStorage.setItem('cartItems', JSON.stringify(cartItems));
+
+  //remove table row and item in cartItem given a cartId
+  function removeItem(cartId){
+
+    //find index of item in cart items array, given a cart id
+    i = 0
+    cartItems.some(item => {
+      if (item.cartId == cartId) {
+        return true; //break
+      }
+      i += 1
+    })
+
+    //only remove item if found
+    if (i != cartItems.length) {
+      cartItems.splice(i, 1)  //remove item from cartItems
+      localStorage.setItem('cartItems', JSON.stringify(cartItems))  //update localstorage with item removed from array
+      var row = document.getElementById(cartId).remove();  //delete table row
     }
-
-
-  function redirectToCheckout() {
-    //localStorage.removeItem('cartItems');
-    window.location.href = "{% url 'checkout' %}"; // Redirect to the checkout page
   }
 
+  function calculatePrice(item) {
+    total = 0
+
+    total += item.price
+    item.toppings.forEach(topping => {
+      total += topping.price
+    })
+
+    return total.toFixed(2)
+  }
+
+  
+  // Redirect to the checkout page
+  function redirectToCheckout() {
+    window.location.href = "{% url 'checkout' %}";
+  }
+
+  renderCartItems();
+
+  /* DELETE????
   function renderReceipt() {
     const receiptItemsContainer = document.getElementById('receiptItems');
     receiptItemsContainer.innerHTML = '';
@@ -91,8 +168,7 @@
     cartItems = [];
     renderCartItems();
   }
-
-  renderCartItems();
+  */
 </script>
 
 
