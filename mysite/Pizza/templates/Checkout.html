@@ -28,17 +28,33 @@
   </section>
 
   <div class="receipt-window" id="receiptWindow">
-    <h2>Receipt Summary</h2>
-    <div id="receiptItems"></div>
-    <p>Total: <span id="receiptTotal"></span></p>
+    <button onclick="hideReceipt()" class="receipt-close">x</button>
+    <div class="receipt-info">
+      <h2>Receipt Summary</h2>
+      <div id="receiptItems"></div>
+      <p>Total: <span id="receiptTotal"></span></p>
+      <hr>
+    </div>
     <button type="submit" onclick="order()" class="toCheckout">Place order</button>
   </div>
 
   <script>
 
+    //returns the cost of an item + the cost of all it's toppings
+    function calculatePrice(item) {
+      total = 0
+
+      total += item.price
+      item.toppings.forEach(topping => {
+        total += topping.price
+      })
+
+      return total
+    }
+
     //generate an html receipt that contains all items (and their toppings) in the cart, and displays the total cost of the order.
     function displayReceipt(event) {
-      event.preventDefault();
+      event.preventDefault();  //do nothing with event
 
       const cardNumber = document.getElementById("cardNumber").value;
       const cardName = document.getElementById("cardName").value;
@@ -52,22 +68,33 @@
       // Retrieve cart items from local storage or use an empty array as default
       const cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
 
-      let total = 0;
-
       // Generate the receipt summary HTML
       let receiptHTML = `
         <p>Card Number: ${cardNumber}</p>
         <p>Cardholder Name: ${cardName}</p>
+        <p>Address: ${address}</p>
         <p>Expiry Date: ${expiryDate}</p>
         <p>CVV: ${cvv}</p>
         <h3>Items:</h3>
         <ul>
       `;
 
+      let total = 0;
       // Iterate over the cart items and calculate the total cost
       cartItems.forEach(item => {
-        receiptHTML += `<li>${item.name} - $${item.price.toFixed(2)}</li>`;
-        total += item.price;
+        receiptHTML += `<li>${item.name} - $${item.price.toFixed(2)}`;
+        
+        //add each topping name and price (if any) below the item 
+        if (item.toppings.length != 0){
+          receiptHTML += `<div class="receiptToppings">`
+          item.toppings.forEach(topping =>{
+            receiptHTML += `<i class="receiptTopping">${topping.name} - $${topping.price.toFixed(2)}<br></i>`
+          })
+          receiptHTML += `</div>`
+        }
+        
+        receiptHTML += `</li>`
+        total += calculatePrice(item);
       });
 
       receiptHTML += `</ul>`;
@@ -80,49 +107,87 @@
       receiptWindow.style.display = "block";
     }
 
-    //convert cart information to JSON, send in POST request for processing by Django
+
+
+    //convert cart information to JSON string, send in POST request for processing by Django
     function order() {
       
+      let cartItems = JSON.parse(localStorage.getItem('cartItems')) || []
 
-      let data = JSON.parse(localStorage.getItem('cartItems')) || []
-      data.push({address: "123 street", name: "bob"})
-      data = JSON.stringify(data)
+      //don't place order if cart is empty
+      if (cartItems.length <= 0){
+        alert("You must have at least 1 item in the cart to place an order.")
+        return;
+      }
+
+      //construct list of item and topping id's from the cart
+      orderData = []
+
+      cartItems.forEach(item =>{
+        
+        //create array of topping pks for the item 
+        toppingPks = []
+        item.toppings.forEach(topping => {
+          toppingPks.push(topping.toppingPK)
+        })
+        
+        //append item pk, and its topping pks to the order data
+        orderData.push({
+          pk: item.itemPK,
+          toppingPks: toppingPks
+        })
+      })
+
+      //append customer info to the end of the order data
+      const cardName = document.getElementById("cardName").value;
+      const address = document.getElementById("address").value;
+      orderData.push({address: address, name: cardName})
+      orderData = JSON.stringify(orderData)  //stringify order data in order to be sent
 
       //submit order data
-      fetch("{% url 'order' %}", {
+      let reponse = fetch("{% url 'order' %}", {
         method: "POST",
-
-        /*
-        body: JSON.stringify({
-          id: 1,
-        }),
-        */
-
-        /*
-        body: JSON.stringify([localStorage.getItem('cartItems'), {
-          address: "123 street",
-          name: "bob"
-        }]),
-        */
-
-        body: data,
+        body: orderData,
         headers: {
           "X-CSRFToken": "{{ csrf_token }}"
         },
         mode: "same-origin",
       })
-      //if successful, clear cart and return to cart page
-      .then(function(){
-        localStorage.removeItem('cartItems');
-        alert(`Your order has been placed!`);
-        window.location.href = '{% url 'cart' %}'; // Redirect back to the cart
+      
+      //get response
+      .then(response => response.json())
+      .then(json => {
+        if (typeof(json) == "boolean") {
+          //if successful, clear cart and return to cart page
+          if (json){ //response should contain true if order was sucsesfully placed.
+            localStorage.removeItem('cartItems');
+            alert(`Your order has been placed!`);
+            window.location.href = '{% url 'cart' %}'; // Redirect back to the cart
+          }
+          else {
+            alert(`Something went wrong`);
+            console.log("This should not happen.")
+            hideReceipt()
+          }
+        }
+        else {  //An error message string is returned if order was sent, but was not accepted due to a failure on the backend, or if the order input vailidation failed.
+          alert(`${json}`)
+          hideReceipt()
+        }
       })
-      //failure
+
+      //failed to send order data
       .catch(function(){ 
-        alert("Failed to place order");
+        alert("Your order could not be placed, please try again later.");
+        hideReceipt()
       })
     }
 
+    function hideReceipt() {
+      // Hide the receipt window
+      const receiptWindow = document.getElementById("receiptWindow");
+      receiptWindow.style.display = "none";
+    }
   </script>
 
 {% endblock %}

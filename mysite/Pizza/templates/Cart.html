@@ -97,7 +97,7 @@
       itemInfo.appendChild(cartItemInfo)
 
       //set table price data
-      itemPrice.textContent = `$${calculatePrice(item)}`;
+      itemPrice.textContent = `$${calculatePrice(item).toFixed(2)}`;
 
       //add all to the table row
       row.appendChild(itemInfo);
@@ -128,6 +128,8 @@
     }
   }
 
+
+  //returns the cost of an item + the cost of all it's toppings
   function calculatePrice(item) {
     total = 0
 
@@ -136,7 +138,7 @@
       total += topping.price
     })
 
-    return total.toFixed(2)
+    return total
   }
 
   
@@ -146,29 +148,6 @@
   }
 
   renderCartItems();
-
-  /* DELETE????
-  function renderReceipt() {
-    const receiptItemsContainer = document.getElementById('receiptItems');
-    receiptItemsContainer.innerHTML = '';
-
-    const heading = document.createElement('h3');
-    heading.textContent = 'Thank you for your purchase!';
-    receiptItemsContainer.appendChild(heading);
-
-    const list = document.createElement('ul');
-    cartItems.forEach(item => {
-      const listItem = document.createElement('li');
-      listItem.textContent = `${item.name} - $${item.price.toFixed(2)}`;
-      list.appendChild(listItem);
-    });
-
-    receiptItemsContainer.appendChild(list);
-
-    cartItems = [];
-    renderCartItems();
-  }
-  */
 </script>
 
 
