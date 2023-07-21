@@ -3,33 +3,36 @@
 
 {%block content %}
 
-<section class="featured-products">
-    <div class="container">
-      <h2>Featured Products</h2>
-      <div class="product-grid">
-        {% for item in ItemList %}
-          <div class="product">
-            <div class="productInner">
-              <img src="{% static 'Pizza/Menu/' %}{{ item.filename }}" alt="An image of {{ item.name }}">
-              <h3>{{item.name}} - ${{item.price}} <br>{{item.calories}} Cal.</h3>
-              <div class="productToppings">
-                <p>{{item.description}}</p>
-                {% for topping in item.toppings.all %}
-                  <input type="checkbox" name="{{item.pk}}topping" id="{{item.pk}}topping{{topping.pk}}" value="{{topping.pk}}">
-                  <label for="{{item.pk}}topping{{topping.pk}}">{{ topping.name }}</label>
-                  <label for="{{item.pk}}topping{{topping.pk}}"> - {{topping.calories}} Cal.</label><br>
-                  $<label for="{{item.pk}}topping{{topping.pk}}">{{topping.price}}</label><br>
-                {% endfor %}
-                <button onclick="addToCart('{{ item.name }}', {{ item.price }}, {{item.pk}})">Add to Cart</button>
+  <!--menu template (information is dynamically filled in by Django backend)-->
+  <section class="featured-products">
+      <div class="container">
+        <h2>Featured Products</h2>
+        <div class="product-grid">
+          <!--create a product div for each item in the Item database.  Contains item information-->
+          {% for item in ItemList %}
+            <div class="product">
+              <div class="productInner">
+                <img src="{% static 'Pizza/Menu/' %}{{ item.filename }}" alt="An image of {{ item.name }}">
+                <h3>{{item.name}} - ${{item.price}} <br>{{item.calories}} Cal.</h3>
+                <div class="productToppings">
+                  <p>{{item.description}}</p>
+                  <!--create a checkbox for each topping the item has-->
+                  {% for topping in item.toppings.all %}
+                    <input type="checkbox" name="{{item.pk}}topping" id="{{item.pk}}topping{{topping.pk}}" value="{{topping.pk}}">
+                    <label for="{{item.pk}}topping{{topping.pk}}">{{ topping.name }}</label>
+                    <label for="{{item.pk}}topping{{topping.pk}}"> - {{topping.calories}} Cal.</label><br>
+                    $<label for="{{item.pk}}topping{{topping.pk}}">{{topping.price}}</label><br>
+                  {% endfor %}
+                  <button onclick="addToCart('{{ item.name }}', {{ item.price }}, {{item.pk}})">Add to Cart</button>
+                </div>
               </div>
             </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        </div>
       </div>
-    </div>
+  </section>
+    
 
-</section>
-  
   <script>
     //a function to add an item (with topping information) to an array
     function addToCart(productName, price, itemId) {
@@ -37,8 +40,9 @@
       //get all checkboxes for the item (the topping selections)
       const checkboxes = document.querySelectorAll(`input[name="${itemId}topping"]`);
 
+      //create an array containing a topping object/dict for each selected checkbox (for the specific item)
       const selectedToppings = [];
-      //for each selected topping
+      //for each topping checkbox
       checkboxes.forEach((checkbox) => {
         if (checkbox.checked) {  //if selected, add topping to array of selected toppings
           const topping = {
@@ -53,7 +57,7 @@
       //get existing cart items array, or empty array if none
       let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
       
-      //create item
+      //create item object/dict
       const item = {
         cartId: getCartId(cartItems),
         itemPK: itemId,
@@ -62,6 +66,7 @@
         toppings: selectedToppings
       };
       
+      //add item to the array
       cartItems.push(item);
 
       //update local storage cart items 

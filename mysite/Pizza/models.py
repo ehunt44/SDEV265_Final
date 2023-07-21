@@ -5,6 +5,7 @@ from os import path
 
 # Create your models here.
 
+# Topping table
 class Topping(models.Model):
     name = models.CharField(max_length=64, default="Default Topping")
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -12,11 +13,11 @@ class Topping(models.Model):
     def __str__(self):
         return self.name
 
+# Item table
 class Item(models.Model):
     name = models.CharField(max_length=128, default="Default Item")
     description = models.CharField(max_length=256, default="Default Description")
     image = models.FilePathField(path="Pizza/static/Pizza/Menu/", default="default.png")
-    # image = models.ImageField(upload_to="Pizza/static/Pizza/Menu/")
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     discount = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
     calories = models.IntegerField(default=0)
@@ -24,9 +25,11 @@ class Item(models.Model):
     def __str__(self):
         return self.name
 
+    # return filename of the item's image EX "pepperoni.png"
     def filename(self):
         return path.basename(self.image)
 
+# Location table
 class Location(models.Model):
     name = models.CharField(max_length=128, default="Default Location")
     address = models.CharField(max_length=128, default="Default Address")
@@ -36,6 +39,7 @@ class Location(models.Model):
     def __str__(self):
         return self.name
 
+# Order table
 class Order(models.Model):
     totalCost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     customerName = models.CharField(max_length=128, default="Default Customer Name")
@@ -46,11 +50,14 @@ class Order(models.Model):
     def __str__(self):
         return str(self.pk)
 
+# Join table between Item and Order
 class ItemOrderJoin(models.Model):
     item = models.ForeignKey(Item, on_delete=models.RESTRICT)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     itemQuantity = models.IntegerField(default=1)
     toppings = models.ManyToManyField(Topping, db_table="ItemToppingOrderJoin", blank=True)
+
+    # to str method shows the order ID, item name and quantity, and each topping name.
     def __str__(self):
         toppingsStr = ""
         for top in self.toppings.all():

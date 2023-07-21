@@ -2,7 +2,7 @@
 
 {%block content %}
 
-
+  <!--base cart table (empty)-->
   <section class="cart">
     <div class="container">
       <h2>Cart</h2>
@@ -22,133 +22,136 @@
   </section>
 
 
-<script>
-  //get cart items from localstorage
-  let cartItems = localStorage.getItem('cartItems') || '[]';
-  cartItems = JSON.parse(cartItems);
+  <script>
+    //get cart items from localstorage
+    let cartItems = localStorage.getItem('cartItems') || '[]';
+    cartItems = JSON.parse(cartItems);
 
-  //generates a table row for each item in the cart.
-  //each row shows the item information, and the choosen toppings for the item
-  //a delete button is created for each row as well, removing the table row and the associated cart item from local storage
-  function renderCartItems() {
-    //get table body html
-    const cartItemsContainer = document.getElementById('cartTableItems');
-    cartItemsContainer.innerHTML = '';  //clear table
-    
-    //create row for each item in cart
-    cartItems.forEach(item => {
+    //generates a table row for each item in the cart.
+    //each row shows the item information, and the choosen toppings for the item
+    //a delete button is created for each row as well, removing the table row and the associated cart item from local storage
+    function renderCartItems() {
+      //get table body html
+      const cartItemsContainer = document.getElementById('cartTableItems');
+      cartItemsContainer.innerHTML = '';  //clear table
+      
+      //create row for each item in cart
+      cartItems.forEach(item => {
 
-      //create row and columns
-      const row = document.createElement('tr');
-      const itemInfo = document.createElement('td');
-      const itemPrice = document.createElement('td');
+        //create row and columns
+        const row = document.createElement('tr');
+        const itemInfo = document.createElement('td');  //column 1
+        const itemPrice = document.createElement('td');  //column 2
 
-      //give row the same id as the item's cart id
-      row.setAttribute("id", item.cartId);
+        //give row the same id as the item's cart id
+        row.setAttribute("id", item.cartId);
 
-      //create list of all the item's selected toppings
-      var toppingsList = ``;
-      item.toppings.forEach(topping => {
-        toppingsList += `- ${topping.name} - $${topping.price}<br/>`;
-      });
+        //create a string containing all the item's selected toppings
+        var toppingsList = ``;
+        item.toppings.forEach(topping => {
+          toppingsList += `- ${topping.name} - $${topping.price}<br/>`;
+        });
 
-      /*
-      <div class="cartItemInfo">
-        <div class="cartItem">
-          ${item.name}<br/>
-          <div class="cartToppings">
-            <i>${toppingsList}</i>
+        /*
+        <div class="cartItemInfo">
+          <div class="cartItem">
+            ${item.name}<br/>
+            <div class="cartToppings">
+              <i>${toppingsList}</i>
+            </div>
+          </div>
+          <div class="cartDelete">
+            <button id="${item.cartId}" onclick="removeItem(${item.cartId})">🗑️</button>
           </div>
         </div>
-        <div class="cartDelete">
-          <button id="${item.cartId}" onclick="removeItem(${item.cartId})">🗑️</button>
-        </div>
-      </div>
-      */
-     
-      //^^^ structure ^^^
-      //generates this table data for the item part of each row, including the item name, its toppings, and the delete button
-      const cartItemInfo = document.createElement('div')
-      cartItemInfo.classList.add('cartItemInfo')
+        */
+      
+        //^^^ structure ^^^
+        //generates div structure that will exist in the first column of each table row. Includes the item name, its toppings, prices, and the delete button
+        const cartItemInfo = document.createElement('div')
+        cartItemInfo.classList.add('cartItemInfo')
 
-        //item name
-        const cartItem = document.createElement('div')
-        cartItem.classList.add('cartItem')
-        cartItem.innerHTML = `${item.name} - $${item.price}<br/>`
+          //item name & price
+          const cartItem = document.createElement('div')
+          cartItem.classList.add('cartItem')
+          cartItem.innerHTML = `${item.name} - $${item.price}<br/>`
 
-          //only create toppings div if the item has chosen toppings
-          if (item.toppings.length > 0) {
-            const cartToppings = document.createElement('div')
-            cartToppings.classList.add('cartToppings')
-            cartToppings.innerHTML = `<i>${toppingsList}</i>`
+            //only create toppings div if the item has chosen toppings
+            if (item.toppings.length > 0) {
+              const cartToppings = document.createElement('div')
+              cartToppings.classList.add('cartToppings')
+              cartToppings.innerHTML = `<i>${toppingsList}</i>`
 
-            cartItem.appendChild(cartToppings)
-          }
+              cartItem.appendChild(cartToppings)
+            }
 
-        //delete button
-        const cartDelete = document.createElement('div')
-        cartDelete.classList.add('cartDelete')
-        cartDelete.innerHTML = `<button id="${item.cartId}" onclick="removeItem(${item.cartId})">🗑️</button>`
+          //delete button
+          const cartDelete = document.createElement('div')
+          cartDelete.classList.add('cartDelete')
+          cartDelete.innerHTML = `<button id="${item.cartId}" onclick="removeItem(${item.cartId})">🗑️</button>`
 
-      cartItemInfo.appendChild(cartItem)
-      cartItemInfo.appendChild(cartDelete)
+        //add delete button and item name to the parent div
+        cartItemInfo.appendChild(cartItem)
+        cartItemInfo.appendChild(cartDelete)
 
-      //add item name, toppings, delete button, to the item table data
-      itemInfo.appendChild(cartItemInfo)
+        //add item name, toppings, prices, delete button, to the first column table data
+        itemInfo.appendChild(cartItemInfo)
 
-      //set table price data
-      itemPrice.textContent = `$${calculatePrice(item).toFixed(2)}`;
+        //set table price data (2nd column) to the total of the item and its toppings in the row.
+        itemPrice.textContent = `$${calculatePrice(item).toFixed(2)}`;
 
-      //add all to the table row
-      row.appendChild(itemInfo);
-      row.appendChild(itemPrice);
-      //add table row to table body
-      cartItemsContainer.appendChild(row);
-    });
-  }
-
-
-  //remove table row and item in cartItem given a cartId
-  function removeItem(cartId){
-
-    //find index of item in cart items array, given a cart id
-    i = 0
-    cartItems.some(item => {
-      if (item.cartId == cartId) {
-        return true; //break
-      }
-      i += 1
-    })
-
-    //only remove item if found
-    if (i != cartItems.length) {
-      cartItems.splice(i, 1)  //remove item from cartItems
-      localStorage.setItem('cartItems', JSON.stringify(cartItems))  //update localstorage with item removed from array
-      var row = document.getElementById(cartId).remove();  //delete table row
+        //add all to the table row
+        row.appendChild(itemInfo);  //column 1
+        row.appendChild(itemPrice);  //column 2
+        //add table row to table body
+        cartItemsContainer.appendChild(row);
+      });
     }
-  }
 
 
-  //returns the cost of an item + the cost of all it's toppings
-  function calculatePrice(item) {
-    total = 0
+    //remove table row and item in the cartItems array given a cartId
+    function removeItem(cartId){
 
-    total += item.price
-    item.toppings.forEach(topping => {
-      total += topping.price
-    })
+      //find array index of the cartId in cartItems.
+      //i will equal the length of cartItems if not found.
+      i = 0
+      cartItems.some(item => {
+        if (item.cartId == cartId) {
+          return true; //break
+        }
+        i += 1
+      })
 
-    return total
-  }
+      //remove item at found index from cartItems array, and the corresponding table row.  (remove nothing if not found)
+      if (i != cartItems.length) {
+        cartItems.splice(i, 1)  //remove item from cartItems
+        localStorage.setItem('cartItems', JSON.stringify(cartItems))  //update localstorage with item removed from array
+        var row = document.getElementById(cartId).remove();  //delete table row
+      }
+    }
 
-  
-  // Redirect to the checkout page
-  function redirectToCheckout() {
-    window.location.href = "{% url 'checkout' %}";
-  }
 
-  renderCartItems();
-</script>
+    //returns the cost of an item + the cost of all it's toppings
+    function calculatePrice(item) {
+      total = 0
+
+      total += item.price
+      item.toppings.forEach(topping => {
+        total += topping.price
+      })
+
+      return total
+    }
+
+    
+    // Redirect to the checkout page
+    function redirectToCheckout() {
+      window.location.href = "{% url 'checkout' %}";
+    }
+
+    // display cart information on page load
+    renderCartItems();
+  </script>
 
 
 

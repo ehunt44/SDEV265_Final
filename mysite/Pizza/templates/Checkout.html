@@ -2,7 +2,7 @@
 
 {%block content %}
 
-
+  <!--payment info form-->
   <section class="checkout">
     <div class="container">
       <h2>Checkout</h2>
@@ -27,6 +27,7 @@
     </div>
   </section>
 
+  <!--receipt (hidden by default)-->
   <div class="receipt-window" id="receiptWindow">
     <button onclick="hideReceipt()" class="receipt-close">x</button>
     <div class="receipt-info">
@@ -52,18 +53,23 @@
       return total
     }
 
+
     //generate an html receipt that contains all items (and their toppings) in the cart, and displays the total cost of the order.
     function displayReceipt(event) {
       event.preventDefault();  //do nothing with event
 
+      //get infromation from payment form
       const cardNumber = document.getElementById("cardNumber").value;
       const cardName = document.getElementById("cardName").value;
       const address = document.getElementById("address").value;
       const expiryDate = document.getElementById("expiryDate").value;
       const cvv = document.getElementById("cvv").value;
 
+      //div that contains the order infromation and customer info
       const receiptItemsContainer = document.getElementById("receiptItems");
+      //span to contain order cost
       const receiptTotalContainer = document.getElementById("receiptTotal");
+
 
       // Retrieve cart items from local storage or use an empty array as default
       const cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
@@ -77,12 +83,15 @@
         <p>CVV: ${cvv}</p>
         <h3>Items:</h3>
         <ul>
-      `;
+      `; // ^^^ start unordered list here
 
+
+      // hold the total cost of the order
       let total = 0;
-      // Iterate over the cart items and calculate the total cost
+      // Iterate over the each item in the cart and add it and its toppings to the receiptHTML, and calculate the total cost
       cartItems.forEach(item => {
-        receiptHTML += `<li>${item.name} - $${item.price.toFixed(2)}`;
+        //list item start
+        receiptHTML += `<li>${item.name} - $${item.price.toFixed(2)}`;  //add item name and price to receipt
         
         //add each topping name and price (if any) below the item 
         if (item.toppings.length != 0){
@@ -93,13 +102,17 @@
           receiptHTML += `</div>`
         }
         
+        //list item end
         receiptHTML += `</li>`
-        total += calculatePrice(item);
+        total += calculatePrice(item); //add price of item and it's toppings to the total
       });
 
+      // end unordered list
       receiptHTML += `</ul>`;
 
+      //update div with generated receipt HTML
       receiptItemsContainer.innerHTML = receiptHTML;
+      //update span with total price of the order
       receiptTotalContainer.textContent = `$${total.toFixed(2)}`;
 
       // Show the receipt window
@@ -109,9 +122,10 @@
 
 
 
-    //convert cart information to JSON string, send in POST request for processing by Django
+    //convert cart information to JSON string, send string in a POST request for processing by Django
     function order() {
       
+      //get cart data
       let cartItems = JSON.parse(localStorage.getItem('cartItems')) || []
 
       //don't place order if cart is empty
@@ -120,12 +134,14 @@
         return;
       }
 
-      //construct list of item and topping id's from the cart
+      //the following code constructs an array of the item IDs and their topping IDs from the cart.  Customer information is included as well.
+      //only necessary information like the item ids are included in the order. The remaining information (like item names and prices) can be determined server-side using the IDs as database primary keys.
       orderData = []
 
+      //add each item ID and its topping IDs from the cart to the orderData array
       cartItems.forEach(item =>{
         
-        //create array of topping pks for the item 
+        //create array of topping IDs/pks (primary keys) for the item 
         toppingPks = []
         item.toppings.forEach(topping => {
           toppingPks.push(topping.toppingPK)
@@ -145,7 +161,7 @@
       orderData = JSON.stringify(orderData)  //stringify order data in order to be sent
 
       //submit order data
-      let reponse = fetch("{% url 'order' %}", {
+      let response = fetch("{% url 'order' %}", {
         method: "POST",
         body: orderData,
         headers: {
@@ -154,13 +170,13 @@
         mode: "same-origin",
       })
       
-      //get response
+      //handle response
       .then(response => response.json())
       .then(json => {
+        // a boolean (set to True) is returned from the server if the order was successful
         if (typeof(json) == "boolean") {
-          //if successful, clear cart and return to cart page
-          if (json){ //response should contain true if order was sucsesfully placed.
-            localStorage.removeItem('cartItems');
+          if (json){ //check if response is True, then clear cart and return to cart page
+            localStorage.removeItem('cartItems');  //clear cart
             alert(`Your order has been placed!`);
             window.location.href = '{% url 'cart' %}'; // Redirect back to the cart
           }
@@ -170,7 +186,7 @@
             hideReceipt()
           }
         }
-        else {  //An error message string is returned if order was sent, but was not accepted due to a failure on the backend, or if the order input vailidation failed.
+        else {  //An error message string is returned if order was sent and not accepted due to a failure on the backend, or if the backend order input vailidation failed.
           alert(`${json}`)
           hideReceipt()
         }
@@ -183,8 +199,8 @@
       })
     }
 
+    // Hide receipt window function
     function hideReceipt() {
-      // Hide the receipt window
       const receiptWindow = document.getElementById("receiptWindow");
       receiptWindow.style.display = "none";
     }
