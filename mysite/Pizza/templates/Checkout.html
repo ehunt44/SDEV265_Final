@@ -204,6 +204,49 @@
       const receiptWindow = document.getElementById("receiptWindow");
       receiptWindow.style.display = "none";
     }
+
+    // function to test the calculatePrice function, to make sure the total cost of an order is correct
+    function verifyTotal() {
+      // 1 margherita Pizza $12.99 w/ extra tomatoes $1.99  (testing item with 1 topping)
+      // 1 cheese pizza - $8.99     (testing item with no toppings)
+      // (testing same item with different topping combos)
+      // 1 hawaiian $10.99 w/ extra ham $1.99 & extra pineapple $0.99
+      // 1 hawaiian $10.99 w/ extra ham $1.99
+      // 1 hawaiian $10.99 w/ extra pineapple $0.99 
+      // 1 hawaiian $10.99
+      // 2 meat lovers pizza 10.99 (testing duplicate item)
+      // total should be $101.85 (calculated manually)
+      expectedTotal = 101.85
+
+      // cart data from adding the above items to the cart
+      let testCartItems = [
+        {"cartId":2,"itemPK":2,"name":"Margherita Pizza","price":12.99,"toppings":[{"toppingPK":5,"name":"Extra tomatoes","price":1.99}]},
+        {"cartId":3,"itemPK":1,"name":"Cheese pizza","price":8.99,"toppings":[]},
+        {"cartId":4,"itemPK":6,"name":"Hawaiian Pizza","price":10.99,"toppings":[{"toppingPK":10,"name":"Extra Ham","price":1.99},{"toppingPK":11,"name":"Extra Pineapple","price":0.99}]},
+        {"cartId":5,"itemPK":6,"name":"Hawaiian Pizza","price":10.99,"toppings":[{"toppingPK":11,"name":"Extra Pineapple","price":0.99}]},
+        {"cartId":6,"itemPK":6,"name":"Hawaiian Pizza","price":10.99,"toppings":[{"toppingPK":10,"name":"Extra Ham","price":1.99}]},
+        {"cartId":7,"itemPK":6,"name":"Hawaiian Pizza","price":10.99,"toppings":[]},
+        {"cartId":8,"itemPK":4,"name":"Meat Lovers Pizza","price":10.99,"toppings":[{"toppingPK":8,"name":"Extra Sausage","price":2.99}]},
+        {"cartId":9,"itemPK":4,"name":"Meat Lovers Pizza","price":10.99,"toppings":[{"toppingPK":8,"name":"Extra Sausage","price":2.99}]}
+      ]
+
+      //create total from the test cart
+      testTotal = 0;
+      testCartItems.forEach(item => {
+        testTotal += calculatePrice(item)
+      })
+
+
+      //check if total matches expected total
+      if (testTotal.toFixed(2) != 101.85){
+        console.log(`Calculated price ${testTotal} was incorrect, should be ${expectedTotal}`)
+      }
+      else{
+        console.log("Calculated price was the same as the expected value")
+      }
+    }
+    verifyTotal();
+
   </script>
 
 {% endblock %}
