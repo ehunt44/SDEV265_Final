@@ -160,6 +160,8 @@
       orderData.push({address: address, name: cardName})
       orderData = JSON.stringify(orderData)  //stringify order data in order to be sent
 
+      console.log(orderData)
+
       //submit order data
       let response = fetch("{% url 'order' %}", {
         method: "POST",
@@ -238,14 +240,14 @@
 
 
       //check if total matches expected total
-      if (testTotal.toFixed(2) != 101.85){
-        console.log(`Calculated price ${testTotal} was incorrect, should be ${expectedTotal}`)
+      if (testTotal.toFixed(2) != expectedTotal){
+        console.log(`Calculated price ${testTotal.toFixed(2)} was incorrect, should be ${expectedTotal}`)
       }
       else{
         console.log("Calculated price was the same as the expected value")
       }
     }
-    verifyTotal();
+    //verifyTotal();
 
   </script>
 
